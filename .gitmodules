@@ -1,0 +1,12 @@
+[submodule "raylib"]
+	path = raylib
+	url = https://github.com/raysan5/raylib.git
+[submodule "arena"]
+	path = arena
+	url = https://github.com/tsoding/arena.git
+[submodule "lua"]
+	path = lua
+	url = https://github.com/lua/lua.git
+[submodule "stb"]
+	path = stb
+	url = https://github.com/nothings/stb.git
