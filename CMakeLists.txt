@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 
 include(FetchContent)
-
+include(FindLua)
 project(untitled C)
 
 add_executable(${PROJECT_NAME} main.c)
+
+find_package(lua REQUIRED)
 
 if(UNIX)
     set(RAYLIB_PATH "./raylib/src")
@@ -15,24 +17,10 @@ else()
     set(RAYLIB_PATH "./raylib/build/raylib")
     set(RAYLIB_INCLUDE_PATH "./raylib/src")
     set(RAYLIB_LIBS_DIR "./raylib/src")
-    set(TO_LINK raylib lua54 opengl32 winmm gdi32)
+    set(TO_LINK raylib ${LUA_LIBRARIES})
 endif()
 
 # lua
-FetchContent_declare(
-    lua
-    URL https://www.lua.org/ftp/lua-5.4.6.tar.gz
-)
-
-FetchContent_MakeAvailable(lua)
-
-file(COPY_FILE "./Makefile" "${lua_SOURCE_DIR}/src/Makefile")
-
-if(NOT EXISTS "${lua_SOURCE_DIR}/src/lua54.dll")
-    execute_process(COMMAND "mingw32-make"
-                    WORKING_DIRECTORY "${lua_SOURCE_DIR}/src"
-    )
-endif()
 
 # raylib
 
@@ -55,15 +43,10 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
   endif()
 endif()
 
-set(LUA_PATH "${lua_SOURCE_DIR}/src")
+set(LUA_PATH "${LUA_INCLUDE_DIR}")
 set(STB_PATH "./stb")
 set(ARENA_PATH "./arena")
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${RAYLIB_INCLUDE_PATH} ${LUA_PATH} ${STB_PATH} ${ARENA_PATH})
-target_link_directories(${PROJECT_NAME} PRIVATE ${RAYLIB_LIBS_DIR} ${LUA_PATH})
+target_link_directories(${PROJECT_NAME} PRIVATE ${RAYLIB_LIBS_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${TO_LINK})
-
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy 
-	"${LUA_PATH}/lua54.dll"
-	"${CMAKE_BINARY_DIR}/lua54.dll")
