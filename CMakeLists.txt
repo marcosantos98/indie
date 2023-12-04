@@ -1,29 +1,16 @@
 cmake_minimum_required(VERSION 3.20)
 
 include(FetchContent)
-include(FindLua)
+
 project(untitled C)
 
 add_executable(${PROJECT_NAME} main.c)
 
-find_package(lua REQUIRED)
+find_package(Lua REQUIRED)
 
-if(UNIX)
-    set(RAYLIB_PATH "./raylib/src")
-    set(RAYLIB_INCLUDE_PATH "./raylib/src")
-    set(RAYLIB_LIBS_DIR "./raylib/src")
-    set(TO_LINK m raylib lua54)
-else()
-    set(RAYLIB_PATH "./raylib/build/raylib")
-    set(RAYLIB_INCLUDE_PATH "./raylib/src")
-    set(RAYLIB_LIBS_DIR "./raylib/src")
-    set(TO_LINK raylib ${LUA_LIBRARIES})
-endif()
-
-# lua
+set(TO_LINK raylib ${LUA_LIBRARIES})
 
 # raylib
-
 set(RAYLIB_VERSION 5.0)
 find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
 if (NOT raylib_FOUND) # If there's none, fetch and build raylib
