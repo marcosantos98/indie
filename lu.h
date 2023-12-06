@@ -23,3 +23,8 @@ static char* try_pop_string(lua_State* L) {
 		return 0;
 	}
 }
+
+static void push_set_field_number(lua_State* L, const char* name, double number) {
+	lua_pushnumber(L, number);
+	lua_setfield(L, -2, name);
+}

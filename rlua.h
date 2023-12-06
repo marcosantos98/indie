@@ -5,5 +5,8 @@
 
 #include "lu.h"
 
-int rluaDrawText(lua_State* L);
-int rluaDrawRectangle(lua_State* L);
+void rluaPushVec2(lua_State*, Vector2);
+
+int rluaDrawText(lua_State*);
+int rluaDrawRectangle(lua_State*);
+int rluaGetWorldToScreen2D(lua_State*);

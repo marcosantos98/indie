@@ -83,6 +83,8 @@ function render()
 
 	DrawText("FPS: ".. GetFPS(), 10, 10, 12, WHITE)
 	DrawText(string.format("Drawn %d/%d", drawn, MAP_W * MAP_H), 10, 22, 12, WHITE)
+
+	GetWorldToScreen2D(10, 10)
 end
 
 

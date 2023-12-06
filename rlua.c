@@ -16,6 +16,11 @@ Color table_to_color(lua_State* L) {
 	};
 }
 
+void rluaPushVec2(lua_State* L, Vector2 vec) {
+	lua_createtable(L, 0, 2);
+	push_set_field_number(L, "x", vec.x);	
+	push_set_field_number(L, "y", vec.y);	
+}
 
 int rluaDrawText(lua_State* L) {
 	Color color = table_to_color(L);
