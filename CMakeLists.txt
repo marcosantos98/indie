@@ -4,9 +4,11 @@ include(FetchContent)
 
 project(untitled C)
 
-add_executable(${PROJECT_NAME} main.c)
+add_executable(${PROJECT_NAME} main.c rlua.c)
 
 find_package(Lua REQUIRED)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(TO_LINK raylib ${LUA_LIBRARIES})
 
@@ -19,7 +21,6 @@ if (NOT raylib_FOUND) # If there's none, fetch and build raylib
     raylib
     DOWNLOAD_EXTRACT_TIMESTAMP OFF
 	GIT_REPOSITORY https://github.com/raysan5/raylib.git
-	GIT_TAG 5.0
   )
   FetchContent_GetProperties(raylib)
   if (NOT raylib_POPULATED) # Have we downloaded raylib yet?

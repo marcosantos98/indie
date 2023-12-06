@@ -10,8 +10,11 @@
 #define STB_DS_IMPLEMENTATION
 #include <stb_ds.h>
 
-#define MAP_W 100
-#define MAP_H 100
+#include "lu.h"
+#include "rlua.h"
+
+#define MAP_W 50
+#define MAP_H 50
 
 #define SAFE_LUA(L, name) 						\
 	do { 										\
@@ -66,28 +69,6 @@ static void dumpstack (lua_State *L) {
   }
 }
 
-int try_pop_number(lua_State* L) {
-	if(lua_isnumber(L, -1)) {
-		int r = lua_tonumber(L, -1);
-		lua_pop(L, 1);
-		return r;
-	} else {
-		printf("Trying to convert to number on a non number value!.\n");
-		return 0;
-	}
-}
-
-char* try_pop_string(lua_State* L) {
-	if(lua_isstring(L, -1)) {
-		char* r = lua_tostring(L, -1);
-		lua_pop(L, 1);
-		return r;
-	} else {
-		printf("Trying to convert to string on a non string value!.\n");
-		return 0;
-	}
-}
-
 void push_entity(lua_State* L, Entity* entity, const char* name) {
 	lua_newtable(L);
 	lua_pushnumber(L, entity->x);
@@ -115,35 +96,6 @@ void push_raylib_key(lua_State* L, int key, const char* name) {
 	lua_setglobal(L, name);
 }
 
-//TODO: Check types!
-Color table_to_color(lua_State* L) {
-	lua_getfield(L, -1, "r");
-	int r = lua_tonumber(L, -1);
-	lua_getfield(L, -2, "g");
-	int g = lua_tonumber(L, -1);
-	lua_getfield(L, -3, "b");
-	int b = lua_tonumber(L, -1);
-	lua_getfield(L, -4, "a");
-	int a = lua_tonumber(L, -1);
-	lua_pop(L, 5); // Remove all pushed color values and the color table
-	return (Color) {
-		r, g, b, a,
-	};
-}
-
-int call_raylib_drawrectangle(lua_State* L) {
-	Color c = table_to_color(L);
-
-	int h = try_pop_number(L);
-	int w = try_pop_number(L);
-	int y = try_pop_number(L);
-	int x = try_pop_number(L);
-
-	DrawRectangle(x, y, w, h, c);
-
-	return 0;
-}
-
 int call_raylib_iskeydown(lua_State* L) {
 	int key = try_pop_number(L);
 	lua_pushboolean(L, IsKeyDown(key));
@@ -154,21 +106,6 @@ int call_raylib_ismousepressed(lua_State* L) {
 	int key = try_pop_number(L);
 	lua_pushboolean(L, IsMouseButtonPressed(key));
 	return 1;
-}
-
-int call_raylib_drawtext(lua_State* L) {
-	
-
-	Color color = table_to_color(L);
-
-	int fontSize = try_pop_number(L);
-	int y = try_pop_number(L);
-	int x = try_pop_number(L);
-
-	const char* text = try_pop_string(L);
-
-	DrawText(text, x, y, fontSize, color);
-	return 0;
 }
 
 int call_raylib_getfps(lua_State* L) {
@@ -239,10 +176,10 @@ void setup_lua(lua_State* L) {
 	PUSH_KEY(L, MAP_H);
 
 	// Raylib C Funs
-	lua_register(L, "DrawRect", call_raylib_drawrectangle);
+	lua_register(L, "DrawRect", rluaDrawRectangle);
 	lua_register(L, "IsKeyDown", call_raylib_iskeydown);	
 	lua_register(L, "IsMouseButtonPressed", call_raylib_ismousepressed);
-	lua_register(L, "DrawText", call_raylib_drawtext);
+	lua_register(L, "DrawText", rluaDrawText);
 	lua_register(L, "GetFPS", call_raylib_getfps);
 	
 	//Game C Funs
@@ -264,12 +201,14 @@ bool check_for_reload() {
 	return false;
 }
 
+int index_from_xy(int x, int y) {
+	return y * MAP_W * x;
+}
+
 int main(void) {
 
 	data.map = arena_alloc(&main_arena, sizeof(TileInfo) * (MAP_W * MAP_H));
-
-	int idx = 0 * MAP_W + 0;
-	data.map[idx] = (TileInfo){.id = 10};
+	memset(data.map, 0, sizeof(TileInfo) * (MAP_W * MAP_H));
 
 	data.player = arena_alloc(&main_arena, sizeof(Entity));
 	data.player->x = 0;
@@ -291,19 +230,17 @@ int main(void) {
 			gamedata_from_lua(L);
 		}
 
-
 		ClearBackground(RAYWHITE);
 		BeginDrawing();
 		
 		lua_getglobal(L, "render");
 		if(lua_pcall(L, 0, 0, 0) != LUA_OK) {
 			printf("Error during call to render: %s\n", lua_tostring(L, -1));
-			exit(1);
+			goto end;
 		}
 
 		EndDrawing();
 	}
-
 
 end:
 	arena_free(&main_arena);

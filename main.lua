@@ -70,7 +70,7 @@ function render()
 		end
 	end
 
-	DrawRect(data.player.x, data.player.y, 100, 100, RED);
+	DrawRect(data.player.x, data.player.y, 16, 16, WHITE);
 
 	if IsMouseButtonPressed(MOUSE_BUTTON_LEFT) then
 		print("Pressed Mouse Left Button")
